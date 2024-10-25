@@ -1,9 +1,9 @@
 import QtQuick
 
-Rectangle{
+Rectangle {
     id: root
 
-    Text{
+    Text {
         text: "Image Viewer"
         anchors.top: root.top
         anchors.horizontalCenter: root.horizontalCenter

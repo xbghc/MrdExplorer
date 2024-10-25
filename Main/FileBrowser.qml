@@ -1,46 +1,117 @@
-import QtQuick
+pragma ComponentBehavior: Bound
 
-Rectangle{
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import Qt.labs.platform
+
+Rectangle {
     id: root
 
-    signal fileSelected(string filePath)
-    signal folderSelected(string folderPath)
-    signal displayModeChanged(bool fileMode, bool folderMode, bool scanMode)
+    signal folderChangedSignal(string folderPath)
+
+    // dispaly mode有三种模式
+    // 1. FILE: 文件模式
+    // 2. FOLDER: 文件夹模式
+    signal displayModeChangedSignal(string mode)
+    
+    property string displayMode: "FOLDER"
 
     color: "lightgray"
 
-    Text{
-        id: title
-        text: "File Browser"
-        anchors.top: parent.top
-        anchors.horizontalCenter: parent.horizontalCenter
+    function openFolder(folderPath) {
+        fileModel.folder = folderPath;
     }
 
-    ListView{
-        id: listView
+    RowLayout {
+        id: header
+
         width: root.width
-        height: root.height - 50
-        anchors.top: title.bottom
-        model: FileModel{
-            id: fileModel
+        height: 50
+
+        RadioButton {
+            id: radio1
+
+            text: "按文件"
+            checked: root.displayMode === "FILE"
+            Layout.alignment: Qt.AlignVCenter
+            Layout.leftMargin: 10
+
+            onClicked: {
+                root.displayMode = "FILE";
+                root.displayModeChangedSignal("FILE");
+            }
         }
-        delegate: Item{
-            width: listView.width
-            height: 50
-            Rectangle{
-                width: listView.width
-                height: 50
-                color: listView.currentIndex === index ? "lightblue" : "white"
-                Text{
-                    text: fileName
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-                MouseArea{
-                    anchors.fill: parent
-                    onClicked: listView.currentIndex = index
+
+        RadioButton {
+            id: radio2
+
+            text: "按文件夹"
+            checked: root.displayMode === "FOLDER"
+            Layout.alignment: Qt.AlignVCenter
+
+            onClicked: {
+                root.displayMode = "FOLDER";
+                root.displayModeChangedSignal("FOLDER");
+            }
+        }
+
+        Button {
+            text: "选择目录"
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+
+            onClicked: {
+                folderDialog.open();
+            } // onClicked
+
+            FolderDialog {
+                id: folderDialog
+                title: "选择文件夹"
+
+                onAccepted: {
+                    root.openFolder(currentFolder);
+                    root.folderChangedSignal(currentFolder);
                 }
             }
         }
     }
+
+    ListView {
+        id: listView
+
+        width: root.width
+        height: root.height - header.height
+        anchors.top: header.bottom
+
+        model: FileModel {
+            id: fileModel
+
+            showDirs: root.displayMode === "FOLDER"
+            showFiles: root.displayMode === "FILE"
+        }
+        delegate: Rectangle {
+            id: delegate
+        required property string index  // 显式声明必需的属性
+        required property string fileName  // 显式声明必需的属性
+        width: listView.width
+        height: 50
+
+        color: ListView.isCurrentItem ? "lightblue" : "white"
+
+        Text {
+            text: delegate.fileName  // 使用声明的属性
+            anchors {
+                left: parent.left
+                leftMargin: 10
+                verticalCenter: parent.verticalCenter
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: listView.currentIndex = delegate.index
+        }
+    } 
+    }
+
 }

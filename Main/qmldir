@@ -2,5 +2,4 @@ module Main
 Main 1.0 Main.qml
 ImageViewer 1.0 ImageViewer.qml
 FileBrowser 1.0 FileBrowser.qml
-FileModel 1.0 FileModel.qml
 MrdImageViewer 1.0 MrdImageViewer.qml

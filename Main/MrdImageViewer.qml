@@ -5,38 +5,27 @@ Rectangle {
     id: root
 
     property string path
-    property string displayMode: "SLICES" // SINGLE or CHANNELS or SLICES
     property int columns: 4
     property int imageSize: 128
     property int sliceIndex: 0
     property string channelIndex: '1'
-    property list<string> channels: []
+    property var channels: []
     property int sliceCount: 0
-
-    // property string test_path: "image://mrd/C:/Projects/MRI-ANC/data/1/exp2/20220413101349-T1-s#1.mrd"
-
-    Component.onCompleted:
-    // console.log(imageViewer.sourceMap);
-    // imageViewer.sourceMap = [["image://mrd/C:/Projects/MRI-ANC/data/1/exp3/1/0"]];
-    {}
+    property string displayMode: "ALL"
 
     ImageViewer {
         id: imageViewer
         anchors.fill: parent
 
         imageSize: root.imageSize
-        // sourceMap: [["image://mrd/C:/Projects/MRI-ANC/data/1/exp2/20220413101349-T1-s#1.mrd/1/0"]]
-        // sourceMap: [["image://mrd/C:/Projects/MRI-ANC/data/1/exp2/1/0"]]
     }
 
     Connections {
         target: imageBridge
-        function onChannelsChanged(channels) {
+        function onImagesChanged(channels, sliceCount) {
             root.channels = channels;
-        }
-        function onSlicesChanged(sliceCount) {
             root.sliceCount = sliceCount;
-            root.updateSourceMap(root.path);
+            root.updateSourceMap();
         }
     }
 
@@ -53,7 +42,7 @@ Rectangle {
         visible: false
     }
 
-    function updateSourceMap(newPath) {
+    function updateSourceMap() {
         if (displayMode == "SLICES") {
             var sourceMap = [];
             var rowCount = Math.ceil(sliceCount / columns);
@@ -62,24 +51,39 @@ Rectangle {
                 for (var j = 0; j < columns; j++) {
                     var slice = i * columns + j;
                     if (slice < sliceCount) {
-                        row.push("image://mrd/" + newPath + "/" + channelIndex + "/" + slice);
+                        row.push("image://mrd/" + root.path + "/" + channelIndex + "/" + slice);
                     }
                 }
                 sourceMap.push(row);
             }
             imageViewer.setSourceMap(sourceMap);
-        } else if (displayMode === "CHANNELS") {
-            imageViewer.sourceMap = [];
-            for (var i = 0; i < columns; i++) {
-                var column = [];
+        } else if (displayMode == "CHANNELS") {
+            var sourceMap = [];
+            var rowCount = Math.ceil(channels.length / columns);
+            for (var i = 0; i < rowCount; i++) {
+                var row = [];
                 for (var j = 0; j < columns; j++) {
-                    column.push("image://mrd/" + path + "/" + (channelIndex + i * columns + j) + "/" + sliceIndex);
+                    var channel = i * columns + j;
+                    if (channel < channels.length) {
+                        row.push("image://mrd/" + root.path + "/" + channels[channel] + "/" + sliceIndex);
+                    }
                 }
-                imageViewer.sourceMap.push(column);
+                sourceMap.push(row);
             }
-        } else if (displayMode === "SINGLE") {
-            imageViewer.sourceMap = [];
-            imageViewer.sourceMap.push(["image://mrd/" + path]);
+            imageViewer.setSourceMap(sourceMap);
+        } else if (displayMode == "ALL") {
+            var sourceMap = [];
+            for (var i = 0; i < root.sliceCount; i++) {
+                var row = [];
+                for (var j = 0; j < root.channels.length; j++) {
+                    row.push("image://mrd/" + root.path + "/" + root.channels[j] + "/" + i);
+                }
+                sourceMap.push(row);
+            }
+            imageViewer.setSourceMap(sourceMap);
+        } else {
+            // 抛出异常
+            throw new Error("Invalid display mode: " + displayMode);
         }
     } // updateSourceMap
 }

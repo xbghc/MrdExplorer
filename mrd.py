@@ -64,12 +64,11 @@ class MrdImageProvider(QQuickImageProvider):
             self.images[channel_num] = images
 
         # 传递给qml通道数和图片数改变了
-        self.bridge.channelsChanged.emit(self.images.keys())
         # 所有通道的图片数都是一样的，随便取一个
-        self.bridge.slicesChanged.emit(len(self.images[channel_num]))
-
+        self.bridge.imagesChanged.emit(
+            list(self.images.keys()),
+            len(self.images[channel_num]))
 
 @QmlElement
 class MrdImageProviderBridge(QObject):
-    channelsChanged = Signal(list)
-    slicesChanged = Signal(int)
+    imagesChanged = Signal(list, int)

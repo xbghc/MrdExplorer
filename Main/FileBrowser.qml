@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
+import Qt.labs.folderlistmodel 2.8
 
 Rectangle {
     id: root
@@ -12,7 +13,7 @@ Rectangle {
     signal folderChangedSignal(string folderPath)
     signal itemSelectedSignal(string itemPath)
 
-    // dispaly mode有三种模式
+    // dispaly mode有2种模式
     // 1. FILE: 文件模式
     // 2. FOLDER: 文件夹模式
     signal displayModeChangedSignal(string mode)
@@ -86,11 +87,13 @@ Rectangle {
         height: root.height - header.height
         anchors.top: header.bottom
 
-        model: FileModel {
+        model: FolderListModel {
             id: fileModel
 
+            folder: "file:///C:/Projects/MRI-ANC/data/1"
             showDirs: root.displayMode === "FOLDER"
             showFiles: root.displayMode === "FILE"
+            nameFilters: root.displayMode === "FILE" ? ["*.MRD", "*.mrd"] : []
         }
         delegate: Rectangle {
             id: delegate

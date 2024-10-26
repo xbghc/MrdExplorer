@@ -1,21 +1,39 @@
 pragma ComponentBehavior: Bound
 import QtQuick
+import QtQuick.Controls
 
-Rectangle {
+Flickable {
     id: root
 
     function setSourceMap(sm) {
         imageGrid.model = sm;
     }
+    contentWidth: column.width
+    contentHeight: column.height
 
     required property int imageSize
 
+    ScrollBar.vertical: ScrollBar {
+        id: vbar
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+    }
+
+    ScrollBar.horizontal: ScrollBar {
+        id: hbar
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+    }
+
     Column {
-        anchors.fill: parent
+        id: column
+        rightPadding: vbar.width
+        bottomPadding: hbar.height
 
         Repeater {
             id: imageGrid
-            // anchors.fill: parent
 
             model: [[]]
             delegate: ImageLine {

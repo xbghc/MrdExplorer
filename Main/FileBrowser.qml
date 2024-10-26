@@ -8,13 +8,15 @@ import Qt.labs.platform
 Rectangle {
     id: root
 
+    property alias path: fileModel.folder
     signal folderChangedSignal(string folderPath)
+    signal itemSelectedSignal(string itemPath)
 
     // dispaly mode有三种模式
     // 1. FILE: 文件模式
     // 2. FOLDER: 文件夹模式
     signal displayModeChangedSignal(string mode)
-    
+
     property string displayMode: "FOLDER"
 
     color: "lightgray"
@@ -62,19 +64,20 @@ Rectangle {
 
             onClicked: {
                 folderDialog.open();
-            } // onClicked
+            }
 
             FolderDialog {
                 id: folderDialog
                 title: "选择文件夹"
 
                 onAccepted: {
+                    root.path = currentFolder;
                     root.openFolder(currentFolder);
                     root.folderChangedSignal(currentFolder);
                 }
             }
         }
-    }
+    } // RowLayout header
 
     ListView {
         id: listView
@@ -91,27 +94,29 @@ Rectangle {
         }
         delegate: Rectangle {
             id: delegate
-        required property string index  // 显式声明必需的属性
-        required property string fileName  // 显式声明必需的属性
-        width: listView.width
-        height: 50
+            required property string index  // 显式声明必需的属性
+            required property string fileName  // 显式声明必需的属性
+            width: listView.width
+            height: 50
 
-        color: ListView.isCurrentItem ? "lightblue" : "white"
+            color: ListView.isCurrentItem ? "lightblue" : "white"
 
-        Text {
-            text: delegate.fileName  // 使用声明的属性
-            anchors {
-                left: parent.left
-                leftMargin: 10
-                verticalCenter: parent.verticalCenter
+            Text {
+                text: delegate.fileName  // 使用声明的属性
+                anchors {
+                    left: parent.left
+                    leftMargin: 10
+                    verticalCenter: parent.verticalCenter
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                onClicked: {
+                    listView.currentIndex = delegate.index;
+                    root.itemSelectedSignal(fileModel.folder + "/" + delegate.fileName);
+                }
             }
         }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: listView.currentIndex = delegate.index
-        }
-    } 
     }
-
 }

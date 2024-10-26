@@ -16,3 +16,12 @@
 ## 简介
 
 用于mrd文件中图片的查看
+
+## 设计
+
+### 图片索引
+
+由于channels可能不连续，所以设置channel的索引类型为字符串，用字典索引。
+而slices是连续的，所以设置slice的类型为整数，用数组索引。
+> [!NOTE]
+> 因为ImageViewer使用Repeater来生成图片，不能接受字典，所以MrdImageViewer中可能会做一些小改动

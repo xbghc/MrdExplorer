@@ -7,7 +7,6 @@ Rectangle {
 
     Rectangle {
         id: controlPanel
-
         width: 300
         height: root.height
         anchors.left: root.left
@@ -15,6 +14,7 @@ Rectangle {
 
         FileBrowser {
             id: fileBrowser
+
             width: controlPanel.width
             height: controlPanel.height
         }
@@ -27,11 +27,18 @@ Rectangle {
         height: root.height
         anchors.right: root.right
 
-        ImageViewer {
+        MrdImageViewer {
             id: imageViewer
-            width: screen.width
-            height: screen.height
+            
+            imageSize: 128
+            displayMode: "SLICES"
         }
     }
 
+    Connections {
+        target: fileBrowser
+        function onItemSelectedSignal(newPath) {
+            imageViewer.setFolder(newPath)
+        }
+    }
 }

@@ -1,5 +1,4 @@
 import QtQuick
-import myMrdImageProvider 1.0
 
 Rectangle {
     id: root
@@ -21,7 +20,7 @@ Rectangle {
     }
 
     Connections {
-        target: imageBridge
+        target: imageBridge  // qmllint disable unqualified
         function onImagesChanged(channels, sliceCount) {
             root.channels = channels;
             root.sliceCount = sliceCount;

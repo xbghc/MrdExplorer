@@ -8,14 +8,9 @@
 import os
 from PySide6.QtQuick import QQuickImageProvider
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtQml import QmlElement
 
 from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale
 from sys import platform
-
-
-QML_IMPORT_NAME = "myMrdImageProvider"
-QML_IMPORT_MAJOR_VERSION = 1
 
 
 class MrdImageProvider(QQuickImageProvider):
@@ -69,6 +64,6 @@ class MrdImageProvider(QQuickImageProvider):
             list(self.images.keys()),
             len(self.images[channel_num]))
 
-@QmlElement
+
 class MrdImageProviderBridge(QObject):
     imagesChanged = Signal(list, int)

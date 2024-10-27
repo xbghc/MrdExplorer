@@ -9,16 +9,15 @@ import Qt.labs.folderlistmodel 2.8
 Rectangle {
     id: root
 
-    property alias path: fileModel.folder
+    property string displayMode: "FOLDER"
+
     signal folderChangedSignal(string folderPath)
     signal itemSelectedSignal(string itemPath)
+    signal displayModeChangedSignal(string mode)
 
     // dispaly mode有2种模式
     // 1. FILE: 文件模式
     // 2. FOLDER: 文件夹模式
-    signal displayModeChangedSignal(string mode)
-
-    property string displayMode: "FOLDER"
 
     color: "lightgray"
 
@@ -28,7 +27,6 @@ Rectangle {
 
     RowLayout {
         id: header
-
         width: root.width
         height: 50
 
@@ -72,7 +70,6 @@ Rectangle {
                 title: "选择文件夹"
 
                 onAccepted: {
-                    root.path = currentFolder;
                     root.openFolder(currentFolder);
                     root.folderChangedSignal(currentFolder);
                 }
@@ -82,21 +79,21 @@ Rectangle {
 
     ListView {
         id: listView
-
-        width: root.width
-        height: root.height - header.height
-        anchors.top: header.bottom
+        anchors {
+            top: header.bottom
+            left: parent.left
+            right: parent.right
+            bottom: parent.bottom
+        }
         clip: true
         ScrollBar.vertical: ScrollBar {
             id: vbar
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.bottom: parent.bottom
+            active: listView.moving || pressed
+            policy: ScrollBar.AsNeeded
         }
 
         model: FolderListModel {
             id: fileModel
-
             folder: "file:///C:/Projects/MRI-ANC/data/1"
             showDirs: root.displayMode === "FOLDER"
             showFiles: root.displayMode === "FILE"
@@ -104,15 +101,14 @@ Rectangle {
         }
         delegate: Rectangle {
             id: delegate
-            required property string index  // 显式声明必需的属性
-            required property string fileName  // 显式声明必需的属性
-            width: listView.width
+            required property string index
+            required property string fileName
+            width: ListView.view.width
             height: 50
-
             color: ListView.isCurrentItem ? "lightblue" : "white"
 
             Text {
-                text: delegate.fileName  // 使用声明的属性
+                text: delegate.fileName
                 anchors {
                     left: parent.left
                     leftMargin: 10

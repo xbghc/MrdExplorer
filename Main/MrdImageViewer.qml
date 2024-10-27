@@ -23,7 +23,7 @@ import QtQuick
 Rectangle {
     id: root
 
-    property string path
+    property string path: ""
     property int columns: 4
     property int imageSize: 128
     property int sliceIndex: 0
@@ -35,8 +35,12 @@ Rectangle {
     ImageViewer {
         id: imageViewer
         anchors.fill: parent
-
         imageSize: root.imageSize
+    }
+    
+    Image {
+        id: triggerImage
+        visible: false
     }
 
     Connections {
@@ -49,16 +53,14 @@ Rectangle {
     }
 
     function setFolder(newPath) {
-        newPath = newPath.replace("file:///", "");
-        root.path = newPath;
-
+        const cleanPath = newPath.replace("file:///", "");
+        root.path = cleanPath;
         // 促使imageProvider重新加载图片
-        triggerImage.source = "image://mrd/" + newPath + "/1/0";
+        triggerImage.source = `image://mrd/" + cleanPath + "/1/0`;
     }
 
-    Image {
-        id: triggerImage
-        visible: false
+    function generateImageUrl(channelId, sliceId) {
+        return `image://mrd/${root.path}/${channelId}/${sliceId}`;
     }
 
     function updateSourceMap() {
@@ -70,12 +72,12 @@ Rectangle {
                 for (var j = 0; j < columns; j++) {
                     var slice = i * columns + j;
                     if (slice < sliceCount) {
-                        row.push("image://mrd/" + root.path + "/" + channelIndex + "/" + slice);
+                        row.push(generateImageUrl(channelIndex, slice));
                     }
                 }
                 sourceMap.push(row);
             }
-            imageViewer.setSourceMap(sourceMap);
+            imageViewer.sourceMap = sourceMap;
         } else if (displayMode == "CHANNELS") {
             var sourceMap = [];
             var rowCount = Math.ceil(channels.length / columns);
@@ -84,25 +86,26 @@ Rectangle {
                 for (var j = 0; j < columns; j++) {
                     var channel = i * columns + j;
                     if (channel < channels.length) {
-                        row.push("image://mrd/" + root.path + "/" + channels[channel] + "/" + sliceIndex);
+                        row.push(generateImageUrl(channels[channel], sliceIndex));
                     }
                 }
                 sourceMap.push(row);
             }
-            imageViewer.setSourceMap(sourceMap);
+            imageViewer.sourceMap = sourceMap;
         } else if (displayMode == "ALL") {
             var sourceMap = [];
             for (var i = 0; i < root.sliceCount; i++) {
                 var row = [];
                 for (var j = 0; j < root.channels.length; j++) {
-                    row.push("image://mrd/" + root.path + "/" + root.channels[j] + "/" + i);
+                    row.push(generateImageUrl(root.channels[j], i));
                 }
                 sourceMap.push(row);
             }
-            imageViewer.setSourceMap(sourceMap);
+            imageViewer.sourceMap = sourceMap;
         } else {
             // 抛出异常
             throw new Error("Invalid display mode: " + displayMode);
         }
     } // updateSourceMap
+
 }

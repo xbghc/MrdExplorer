@@ -10,15 +10,12 @@ import QtQuick.Controls
 
 Flickable {
     id: root
+    required property int imageSize
+    property alias sourceMap: imageGrid.model
 
-    function setSourceMap(sm) {
-        imageGrid.model = sm;
-    }
     contentWidth: column.width
     contentHeight: column.height
     clip: true
-
-    required property int imageSize
 
     ScrollBar.vertical: ScrollBar {
         id: vbar
@@ -36,6 +33,7 @@ Flickable {
 
     Column {
         id: column
+        spacing: 2
         rightPadding: vbar.width
         bottomPadding: hbar.height
 
@@ -45,7 +43,6 @@ Flickable {
             model: [[]]
             delegate: ImageLine {
                 required property var modelData
-
                 images: modelData
             }
         }
@@ -59,7 +56,6 @@ Flickable {
             model: imageLine.images
             delegate: Item {
                 id: imageDelegate
-
                 required property string modelData
                 width: root.imageSize
                 height: root.imageSize

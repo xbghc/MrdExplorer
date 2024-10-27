@@ -1,3 +1,9 @@
+/*
+    ImageViewer需要两个输入：
+    1. imageSize：整数，控制图片的大小
+    2. sourceMap：二维的字符串数组，每个元素是一个图片的路径
+*/ 
+
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Controls

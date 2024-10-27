@@ -86,6 +86,13 @@ Rectangle {
         width: root.width
         height: root.height - header.height
         anchors.top: header.bottom
+        clip: true
+        ScrollBar.vertical: ScrollBar {
+            id: vbar
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+        }
 
         model: FolderListModel {
             id: fileModel

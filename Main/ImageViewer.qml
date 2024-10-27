@@ -10,6 +10,7 @@ Flickable {
     }
     contentWidth: column.width
     contentHeight: column.height
+    clip: true
 
     required property int imageSize
 

@@ -3,7 +3,7 @@
     它根据外部传入的参数来调整对ImageViewer的调用。
     所需的参数包括
     1. path：字符串，图片文件或其所在文件夹的目录
-    2. displayMode：字符串，显示模式可以是"ALL"、"CHANNELS"或"SLICES"
+    2. displayMode：字符串，显示模式可以是"ALL"、"SINGLE_CHANNEL"或"SINGLE_SLICE"
     注意，path并非直接传递给MrdImageViewer，而是通过setFolder方法传递给它。
 
     当外部调用setFolder，MrdImageViewer会经历以下步骤：
@@ -64,7 +64,7 @@ Rectangle {
     }
 
     function updateSourceMap() {
-        if (displayMode == "SLICES") {
+        if (displayMode == "SINGLE_CHANNEL") {
             var sourceMap = [];
             var rowCount = Math.ceil(sliceCount / columns);
             for (var i = 0; i < rowCount; i++) {
@@ -78,7 +78,7 @@ Rectangle {
                 sourceMap.push(row);
             }
             imageViewer.sourceMap = sourceMap;
-        } else if (displayMode == "CHANNELS") {
+        } else if (displayMode == "SINGLE_SLICE") {
             var sourceMap = [];
             var rowCount = Math.ceil(channels.length / columns);
             for (var i = 0; i < rowCount; i++) {

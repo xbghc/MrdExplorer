@@ -22,37 +22,12 @@ ApplicationWindow {
                 height: 260
             }
 
-            Row {
+            DisplayModePanel {
                 id: displayModePanel
+                
                 anchors.topMargin: 50
                 anchors.top: fileBrowser.bottom
                 width: controlPanel.width
-                height: 40
-                RadioButton {
-                    id: allRadioButton
-                    text: "全部显示"
-                    checked: true
-                    onClicked: {
-                        imageViewer.displayMode = "ALL";
-                        imageViewer.updateSourceMap();
-                    }
-                }
-                RadioButton {
-                    id: channelsRadioButton
-                    text: "显示所有通道"
-                    onClicked: {
-                        imageViewer.displayMode = "CHANNELS";
-                        imageViewer.updateSourceMap();
-                    }
-                }
-                RadioButton {
-                    id: slicesRadioButton
-                    text: "显示所有切片"
-                    onClicked: {
-                        imageViewer.displayMode = "SLICES";
-                        imageViewer.updateSourceMap();
-                    }
-                }
             }
         }
 
@@ -75,6 +50,22 @@ ApplicationWindow {
         target: fileBrowser
         function onItemSelectedSignal(newPath) {
             imageViewer.setFolder(newPath);
+        }
+    }
+
+    Connections {
+        target: displayModePanel
+        function onDisplayModeChangedSignal(mode) {
+            imageViewer.displayMode = mode;
+            imageViewer.updateSourceMap();
+        }
+        function onSliceFilterChangedSignal(sliceIndex) {
+            imageViewer.sliceIndex = sliceIndex;
+            imageViewer.updateSourceMap();
+        }
+        function onChannelFilterChangedSignal(channelIndex) {
+            imageViewer.channelIndex = channelIndex;
+            imageViewer.updateSourceMap();
         }
     }
 }

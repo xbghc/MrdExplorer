@@ -56,7 +56,7 @@ Rectangle {
         const cleanPath = newPath.replace("file:///", "");
         root.path = cleanPath;
         // 促使imageProvider重新加载图片
-        triggerImage.source = `image://mrd/" + cleanPath + "/1/0`;
+        triggerImage.source = `image://mrd/${cleanPath}/1/0`;
     }
 
     function generateImageUrl(channelId, sliceId) {

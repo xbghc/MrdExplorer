@@ -1,15 +1,13 @@
 import sys
 from PySide6.QtGui import QGuiApplication
-from PySide6.QtQuick import QQuickView
+from PySide6.QtQml import QQmlApplicationEngine
 
 from mrd import MrdImageProvider, MrdImageProviderBridge
 
 if __name__ == "__main__":
     app = QGuiApplication()
-    view = QQuickView()
 
-    engine = view.engine()
-    engine.addImportPath(sys.path[0])
+    engine = QQmlApplicationEngine()
 
     bridge = MrdImageProviderBridge()
     provider = MrdImageProvider(bridge)
@@ -18,8 +16,6 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty(
         "imageBridge", bridge)
 
-    view.loadFromModule("Main", "Main")
-    view.show()
+    engine.load("Main/Main.qml")
     ex = app.exec()
-    del view
     sys.exit(ex)

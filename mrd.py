@@ -58,6 +58,41 @@ class MrdImageProvider(QQuickImageProvider):
             channel_num = path.split("#")[-1].split(".")[0]
             self.images[channel_num] = images
 
+        # 图片自己归一化
+        # for key in self.images.keys():
+        #     for i in range(len(self.images[key])):
+        #         self.images[key][i] = self.images[key][i] * 255 / self.images[key][i].max() 
+
+        # 一个线圈做归一化
+        for key in self.images.keys():
+            max_value = 0
+            # min_value = 1e6
+            for i in range(len(self.images[key])):
+                max_value = max(max_value, self.images[key][i].max())
+                # min_value = min(min_value, self.images[key][i].min())
+            for i in range(len(self.images[key])):
+                # self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value)
+                self.images[key][i] = self.images[key][i] / max_value * 255
+
+        # 全局归一化
+        # max_value = 0
+        # for key in self.images.keys():
+        #     for i in range(len(self.images[key])):
+        #         max_value = max(max_value, self.images[key][i].max())
+        # for key in self.images.keys():
+        #     for i in range(len(self.images[key])):
+        #         self.images[key][i] = self.images[key][i] / max_value * 255
+
+        # 一张切片的不同线圈之间归一化
+        # for i in range(len(self.images['1'])):
+        #     max_value = 0
+        #     min_value = 1e6
+        #     for key in self.images.keys():
+        #         max_value = max(max_value, self.images[key][i].max())
+        #         min_value = min(min_value, self.images[key][i].min())    
+        #     for key in self.images.keys():
+        #         self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value) 
+
         # 传递给qml通道数和图片数改变了
         # 所有通道的图片数都是一样的，随便取一个
         self.bridge.imagesChanged.emit(

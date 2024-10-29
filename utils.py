@@ -153,23 +153,7 @@ def numpy_to_qimage_grayscale(array):
     if len(array.shape) != 2:
         raise ValueError("输入必须是2D数组")
     
-    # 数据归一化到[0, 255]范围
-    if array.dtype != np.uint8:
-        # 获取数据范围
-        array_min = array.min()
-        array_max = array.max()
-        
-        # 避免除零错误
-        if array_max == array_min:
-            normalized = np.zeros_like(array)
-        else:
-            # 归一化计算
-            normalized = ((array - array_min) * 255.0 / (array_max - array_min))
-        
-        # 转换为uint8类型
-        array_8bit = normalized.astype(np.uint8)
-    else:
-        array_8bit = array
+    array_8bit = array.astype(np.uint8)
     
     # 确保数据是连续的
     if not array_8bit.flags['C_CONTIGUOUS']:

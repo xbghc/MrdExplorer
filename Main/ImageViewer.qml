@@ -16,7 +16,7 @@ ScrollView {
 
     Column {
         id: column
-        spacing: 2
+        spacing: 1
 
         Repeater {
             id: imageGrid
@@ -33,6 +33,8 @@ ScrollView {
         id: imageLine
         required property var images  // list<string>
         height: root.imageSize
+        spacing: 1
+        
         Repeater {
             model: imageLine.images
             delegate: Item {

@@ -6,6 +6,13 @@
 from PySide6.QtGui import QImage
 import numpy as np
 import logging
+import os
+
+def getMrdImagesNum(path):
+    with open(path, 'rb') as f:
+        mrd = f.read()
+    shape = parseMrd(mrd).shape
+    return shape[2] * shape[4]  # slices和views2有且仅有一个为1
 
 
 def parseMrd(mrd):
@@ -168,3 +175,15 @@ def numpy_to_qimage_grayscale(array):
     
     # 创建深拷贝,确保数据独立
     return qimage.copy()
+
+
+def parseMrdFileName(filename: str):
+    filename = os.path.basename(filename)
+    if not (filename.endswith(".mrd") or filename.endswith(".MRD")):
+        raise ValueError
+
+    filename = os.path.splitext(filename)[0]
+    if "#" in filename:
+        return filename.split("#")
+    else:
+        return [filename, None]

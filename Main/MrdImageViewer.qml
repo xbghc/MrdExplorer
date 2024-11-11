@@ -19,93 +19,26 @@
 */
 
 import QtQuick
+import main.backend
 
 Rectangle {
     id: root
 
-    property string path: ""
-    property int columns: 4
+    property alias model: imageViewer.sourceMap
     property int imageSize: 128
-    property int sliceIndex: 0
-    property string channelIndex: '1'
-    property var channels: []
-    property int sliceCount: 0
-    property string displayMode: "ALL"
 
     ImageViewer {
         id: imageViewer
         anchors.fill: parent
         imageSize: root.imageSize
     }
-    
+
     Image {
         id: triggerImage
         visible: false
     }
 
-    Connections {
-        target: imageBridge  // qmllint disable unqualified
-        function onImagesChanged(channels, sliceCount) {
-            root.channels = channels;
-            root.sliceCount = sliceCount;
-            root.updateSourceMap();
-        }
+    function setSource(url) {
+        model = Backend.getImagesSources(url); // qmllint disable unqualified
     }
-
-    function setFolder(newPath) {
-        const cleanPath = newPath.replace("file:///", "");
-        root.path = cleanPath;
-        // 促使imageProvider重新加载图片
-        triggerImage.source = `image://mrd/${cleanPath}/1/0`;
-    }
-
-    function generateImageUrl(channelId, sliceId) {
-        return `image://mrd/${root.path}/${channelId}/${sliceId}`;
-    }
-
-    function updateSourceMap() {
-        if (displayMode == "SINGLE_CHANNEL") {
-            var sourceMap = [];
-            var rowCount = Math.ceil(sliceCount / columns);
-            for (var i = 0; i < rowCount; i++) {
-                var row = [];
-                for (var j = 0; j < columns; j++) {
-                    var slice = i * columns + j;
-                    if (slice < sliceCount) {
-                        row.push(generateImageUrl(channelIndex, slice));
-                    }
-                }
-                sourceMap.push(row);
-            }
-            imageViewer.sourceMap = sourceMap;
-        } else if (displayMode == "SINGLE_SLICE") {
-            var sourceMap = [];
-            var rowCount = Math.ceil(channels.length / columns);
-            for (var i = 0; i < rowCount; i++) {
-                var row = [];
-                for (var j = 0; j < columns; j++) {
-                    var channel = i * columns + j;
-                    if (channel < channels.length) {
-                        row.push(generateImageUrl(channels[channel], sliceIndex));
-                    }
-                }
-                sourceMap.push(row);
-            }
-            imageViewer.sourceMap = sourceMap;
-        } else if (displayMode == "ALL") {
-            var sourceMap = [];
-            for (var i = 0; i < root.sliceCount; i++) {
-                var row = [];
-                for (var j = 0; j < root.channels.length; j++) {
-                    row.push(generateImageUrl(root.channels[j], i));
-                }
-                sourceMap.push(row);
-            }
-            imageViewer.sourceMap = sourceMap;
-        } else {
-            // 抛出异常
-            throw new Error("Invalid display mode: " + displayMode);
-        }
-    } // updateSourceMap
-
 }

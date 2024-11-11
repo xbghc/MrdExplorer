@@ -34,7 +34,7 @@ ScrollView {
         required property var images  // list<string>
         height: root.imageSize
         spacing: 1
-        
+
         Repeater {
             model: imageLine.images
             delegate: Item {
@@ -44,7 +44,7 @@ ScrollView {
                 height: root.imageSize
                 Image {
                     anchors.fill: parent
-                    source: imageDelegate.modelData
+                    source: 'image://mrd/' + imageDelegate.modelData
                 }
             }
         }

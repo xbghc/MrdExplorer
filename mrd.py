@@ -1,6 +1,6 @@
 # requestImage() 传入的 id格式应该是:
-#   "path/channel_num/image_num"
-#   其中channel_num和image_num的值为0开始的整数
+#   "path/image_num"
+#   image_num的值为0开始的整数
 #
 # 图片大小为kdata的原始大小
 # 一次性只有一个path， 为了节省内存，当path改变时，会重新加载图片
@@ -23,12 +23,17 @@ class MrdImageProvider(QQuickImageProvider):
     def requestImage(self, id, size, requestedSize):
         parts = id.split("/")
         image_num = int(parts[-1])
-        channel_num = parts[-2]
         if platform == "win32":
-            path = "\\".join(parts[:-2])
+            path = "\\".join(parts[:-1])
         else:
-            path = "/".join(parts[:-2])
+            path = "/".join(parts[:-1])
 
+        if os.path.exists(path + '.mrd'):
+            path += '.mrd'
+        elif os.path.exists(path + '.MRD'):
+            path += '.MRD'
+        else:
+            raise ValueError
         self.loadImages(path)
 
         if not os.path.isdir(path):
@@ -42,10 +47,11 @@ class MrdImageProvider(QQuickImageProvider):
         self.image = image
 
     def loadImages(self, path):
-        if path == self.path:
+        if not path.split("#")[0] == self.path:
+            self.images = {}
+            self.path = path.split("#")[0]
+        elif path.split(".")[-2][-1] in self.images:
             return
-        self.path = path
-        self.images = {}
 
         if os.path.isdir(path):
             pathList = [os.path.join(path, fname) for fname in
@@ -55,7 +61,7 @@ class MrdImageProvider(QQuickImageProvider):
 
         for path in pathList:
             images = loadImagesFromMrdFile(path)
-            channel_num = path.split("#")[-1].split(".")[0]
+            channel_num = path.split(".")[-2][-1]
             self.images[channel_num] = images
 
         # 图片自己归一化

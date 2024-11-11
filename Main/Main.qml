@@ -21,7 +21,6 @@ ApplicationWindow {
                 width: controlPanel.width
                 height: 260
             }
-
         }
 
         Rectangle {
@@ -41,8 +40,8 @@ ApplicationWindow {
 
     Connections {
         target: fileBrowser
-        function onItemSelectedSignal(newPath) {
-            imageViewer.setFolder(newPath);
+        function onFileChanged(url) {
+            imageViewer.setSource(url);
         }
     }
 }

@@ -22,13 +22,6 @@ ApplicationWindow {
                 height: 260
             }
 
-            DisplayModePanel {
-                id: displayModePanel
-                
-                anchors.topMargin: 50
-                anchors.top: fileBrowser.bottom
-                width: controlPanel.width
-            }
         }
 
         Rectangle {
@@ -50,22 +43,6 @@ ApplicationWindow {
         target: fileBrowser
         function onItemSelectedSignal(newPath) {
             imageViewer.setFolder(newPath);
-        }
-    }
-
-    Connections {
-        target: displayModePanel
-        function onDisplayModeChangedSignal(mode) {
-            imageViewer.displayMode = mode;
-            imageViewer.updateSourceMap();
-        }
-        function onSliceFilterChangedSignal(sliceIndex) {
-            imageViewer.sliceIndex = sliceIndex;
-            imageViewer.updateSourceMap();
-        }
-        function onChannelFilterChangedSignal(channelIndex) {
-            imageViewer.channelIndex = channelIndex;
-            imageViewer.updateSourceMap();
         }
     }
 }

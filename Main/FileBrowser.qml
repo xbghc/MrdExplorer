@@ -4,7 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
-import main.backend 1.0
+import main.backend
 
 Rectangle {
     id: root

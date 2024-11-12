@@ -7,7 +7,6 @@
 
 import os
 from PySide6.QtQuick import QQuickImageProvider
-from PySide6.QtCore import QObject, Signal
 
 from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale
 from sys import platform

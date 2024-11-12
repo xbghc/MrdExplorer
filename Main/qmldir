@@ -1,6 +1,0 @@
-module Main
-Main 1.0 Main.qml
-ImageViewer 1.0 ImageViewer.qml
-FileBrowser 1.0 FileBrowser.qml
-MrdImageViewer 1.0 MrdImageViewer.qml
-DisplayModePanel 1.0 components/DisplayModePanel.qml

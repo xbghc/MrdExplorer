@@ -13,7 +13,7 @@ from sys import platform
 
 
 class MrdImageProvider(QQuickImageProvider):
-    def __init__(self, ):
+    def __init__(self):
         super().__init__(QQuickImageProvider.Image)
         self.images = {}  # 因为channel不一定是连续的，所以用字典
         self.path = ""
@@ -26,10 +26,10 @@ class MrdImageProvider(QQuickImageProvider):
         else:
             path = "/".join(parts[:-1])
 
-        if os.path.exists(path + '.mrd'):
-            path += '.mrd'
-        elif os.path.exists(path + '.MRD'):
-            path += '.MRD'
+        if os.path.exists(path + ".mrd"):
+            path += ".mrd"
+        elif os.path.exists(path + ".MRD"):
+            path += ".MRD"
         else:
             raise ValueError
         self.loadImages(path)
@@ -45,27 +45,37 @@ class MrdImageProvider(QQuickImageProvider):
         self.image = image
 
     def loadImages(self, path):
-        if not path.split("#")[0] == self.path:
-            self.images = {}
-            self.path = path.split("#")[0]
-        elif path.split(".")[-2][-1] in self.images:
+        """
+        path接受以下形式:
+        - filename.mrd
+        - filename#i.mrd
+        - filename
+        """
+        if path.endswith(".mrd") or path.endswith(".MRD"):
+            path = os.path.splitext(path)[0]
+        if "#" in path:
+            path = path.split("#")[0]
+        if path == self.path:
             return
+        self.path = path
 
-        if os.path.isdir(path):
-            pathList = [os.path.join(path, fname) for fname in
-                        os.listdir(path)]
-        else:
-            pathList = [path]
+        print(f"loading: {path}")
+        self.images.clear()
 
-        for path in pathList:
-            images = loadImagesFromMrdFile(path)
-            channel_num = path.split(".")[-2][-1]
+        dirname = os.path.dirname(path)
+        prefix = os.path.basename(path)
+        for f in os.listdir(dirname):
+            if not f.startswith(prefix):
+                continue
+
+            images = loadImagesFromMrdFile(os.path.join(dirname, f))
+            channel_num = f.split(".")[-2][-1]
             self.images[channel_num] = images
 
         # 图片自己归一化
         # for key in self.images.keys():
         #     for i in range(len(self.images[key])):
-        #         self.images[key][i] = self.images[key][i] * 255 / self.images[key][i].max() 
+        #         self.images[key][i] = self.images[key][i] * 255 / self.images[key][i].max()
 
         # 一个线圈做归一化
         for key in self.images.keys():
@@ -93,7 +103,7 @@ class MrdImageProvider(QQuickImageProvider):
         #     min_value = 1e6
         #     for key in self.images.keys():
         #         max_value = max(max_value, self.images[key][i].max())
-        #         min_value = min(min_value, self.images[key][i].min())    
+        #         min_value = min(min_value, self.images[key][i].min())
         #     for key in self.images.keys():
-        #         self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value) 
-
+        #         self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value)
+        print("loaded")

@@ -14,11 +14,10 @@ from sys import platform
 
 
 class MrdImageProvider(QQuickImageProvider):
-    def __init__(self, bridge):
+    def __init__(self, ):
         super().__init__(QQuickImageProvider.Image)
         self.images = {}  # 因为channel不一定是连续的，所以用字典
         self.path = ""
-        self.bridge = bridge
 
     def requestImage(self, id, size, requestedSize):
         parts = id.split("/")
@@ -99,12 +98,3 @@ class MrdImageProvider(QQuickImageProvider):
         #     for key in self.images.keys():
         #         self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value) 
 
-        # 传递给qml通道数和图片数改变了
-        # 所有通道的图片数都是一样的，随便取一个
-        self.bridge.imagesChanged.emit(
-            list(self.images.keys()),
-            len(self.images[channel_num]))
-
-
-class MrdImageProviderBridge(QObject):
-    imagesChanged = Signal(list, int)

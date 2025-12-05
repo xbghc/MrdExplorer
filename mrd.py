@@ -85,13 +85,11 @@ class MrdImageProvider(QQuickImageProvider):
         # 一个线圈做归一化
         for key in self.images.keys():
             max_value = 0
-            # min_value = 1e6
             for i in range(len(self.images[key])):
                 max_value = max(max_value, self.images[key][i].max())
-                # min_value = min(min_value, self.images[key][i].min())
-            for i in range(len(self.images[key])):
-                # self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value)
-                self.images[key][i] = self.images[key][i] / max_value * 255
+            if max_value > 0:
+                for i in range(len(self.images[key])):
+                    self.images[key][i] = self.images[key][i] / max_value * 255
 
         # 全局归一化
         # max_value = 0

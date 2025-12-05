@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
+import QtCore
 import main.backend
 
 Rectangle {
@@ -27,7 +28,7 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        openFolder("C:/Projects/MRI-ANC/patients")
+        openFolder(StandardPaths.writableLocation(StandardPaths.HomeLocation).toString().replace("file://", ""))
     }
 
     ColumnLayout {

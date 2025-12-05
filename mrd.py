@@ -6,10 +6,13 @@
 # 一次性只有一个path， 为了节省内存，当path改变时，会重新加载图片
 
 import os
+import logging
 from PySide6.QtQuick import QQuickImageProvider
 
 from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale, parseMrdFileName
 from sys import platform
+
+logger = logging.getLogger(__name__)
 
 
 class MrdImageProvider(QQuickImageProvider):
@@ -60,7 +63,7 @@ class MrdImageProvider(QQuickImageProvider):
             return
         self.path = path
 
-        print(f"loading: {path}")
+        logger.debug(f"加载图像: {path}")
         self.images.clear()
 
         dirname = os.path.dirname(path)
@@ -109,4 +112,4 @@ class MrdImageProvider(QQuickImageProvider):
         #         min_value = min(min_value, self.images[key][i].min())
         #     for key in self.images.keys():
         #         self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value)
-        print("loaded")
+        logger.debug("图像加载完成")

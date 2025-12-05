@@ -124,7 +124,7 @@ def parseMrd(mrd):
 
 
 def loadImagesFromMrdFile(fpath):
-    if not fpath.endswith(".mrd"):
+    if not fpath.lower().endswith(".mrd"):
         return None
 
     with open(fpath, "rb") as f:
@@ -179,7 +179,7 @@ def numpy_to_qimage_grayscale(array):
 
 def parseMrdFileName(filename: str):
     filename = os.path.basename(filename)
-    if not (filename.endswith(".mrd") or filename.endswith(".MRD")):
+    if not filename.lower().endswith(".mrd"):
         raise ValueError
 
     filename = os.path.splitext(filename)[0]

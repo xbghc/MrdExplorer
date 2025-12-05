@@ -28,7 +28,7 @@ class Backend(QObject):
             if os.path.isdir(u):
                 out.append({"url": u, "isDir": True, "filename": f})
             else:
-                if not (f.endswith(".mrd") or f.endswith(".MRD")):
+                if not f.lower().endswith(".mrd"):
                     continue
                 filename, c = utils.parseMrdFileName(u)
                 if hide_single and c is None:
@@ -56,23 +56,18 @@ class Backend(QObject):
         directory = os.path.dirname(url)
         filename = os.path.basename(url)
 
-        noImages = 0
-        for i in os.listdir(directory):
-            if i.startswith(filename):
-                noImages = utils.getMrdImagesNum(os.path.join(directory, i))
-                break
-        if noImages == 0:
+        # 单次目录遍历，同时获取通道列表和图片数量
+        file_list = os.listdir(directory)
+        matching_files = [f for f in file_list if f.startswith(filename)]
+
+        if not matching_files:
             raise ValueError
 
-        channels_list = []
-        for f in os.listdir(directory):
-            if f.startswith(filename):
-                channels_list.append(utils.parseMrdFileName(f)[1])
+        num_images = utils.getMrdImagesNum(os.path.join(directory, matching_files[0]))
+        channels_list = [utils.parseMrdFileName(f)[1] for f in matching_files]
 
         out = []
-        for i in range(noImages):
-            slices = []
-            for c in channels_list:
-                slices.append(url + "#" + c + "/" + str(i))
+        for i in range(num_images):
+            slices = [url + "#" + c + "/" + str(i) for c in channels_list]
             out.append(slices)
         return out

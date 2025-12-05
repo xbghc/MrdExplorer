@@ -8,7 +8,7 @@
 import os
 from PySide6.QtQuick import QQuickImageProvider
 
-from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale
+from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale, parseMrdFileName
 from sys import platform
 
 
@@ -34,8 +34,9 @@ class MrdImageProvider(QQuickImageProvider):
             raise ValueError
         self.loadImages(path)
 
-        if not os.path.isdir(path):
-            channel_num = path.split(".")[-2][-1]
+        _, channel_num = parseMrdFileName(path)
+        if channel_num is None:
+            channel_num = "0"  # 默认通道
         image = self.images[channel_num][image_num]
         image = numpy_to_qimage_grayscale(image)
 
@@ -67,9 +68,13 @@ class MrdImageProvider(QQuickImageProvider):
         for f in os.listdir(dirname):
             if not f.startswith(prefix):
                 continue
+            if not (f.lower().endswith(".mrd")):
+                continue
 
             images = loadImagesFromMrdFile(os.path.join(dirname, f))
-            channel_num = f.split(".")[-2][-1]
+            _, channel_num = parseMrdFileName(f)
+            if channel_num is None:
+                channel_num = "0"  # 默认通道
             self.images[channel_num] = images
 
         # 图片自己归一化

@@ -31,7 +31,7 @@ class MrdImageProvider(QQuickImageProvider):
         elif os.path.exists(path + ".MRD"):
             path += ".MRD"
         else:
-            raise ValueError
+            raise FileNotFoundError(f"MRD文件不存在: {path}")
         self.loadImages(path)
 
         _, channel_num = parseMrdFileName(path)

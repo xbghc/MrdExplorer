@@ -18,7 +18,7 @@ class Backend(QObject):
     @Slot(str, bool, bool, result=list)
     def listdir(self, d, merge_channels, hide_single):
         if not os.path.isdir(d):
-            raise TypeError
+            raise NotADirectoryError(f"路径不是目录: {d}")
 
         file_list = os.listdir(d)
         out = []
@@ -61,7 +61,7 @@ class Backend(QObject):
         matching_files = [f for f in file_list if f.startswith(filename)]
 
         if not matching_files:
-            raise ValueError
+            raise FileNotFoundError(f"找不到匹配的MRD文件: {filename}")
 
         num_images = utils.getMrdImagesNum(os.path.join(directory, matching_files[0]))
         channels_list = [utils.parseMrdFileName(f)[1] for f in matching_files]

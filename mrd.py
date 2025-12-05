@@ -45,9 +45,6 @@ class MrdImageProvider(QQuickImageProvider):
 
         return image
 
-    def updateImage(self, image):
-        self.image = image
-
     def loadImages(self, path):
         """
         path接受以下形式:

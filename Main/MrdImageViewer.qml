@@ -33,11 +33,6 @@ Rectangle {
         imageSize: root.imageSize
     }
 
-    Image {
-        id: triggerImage
-        visible: false
-    }
-
     function setSource(url) {
         model = Backend.getImagesSources(url); // qmllint disable unqualified
     }

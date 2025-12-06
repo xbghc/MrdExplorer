@@ -20,6 +20,7 @@ Rectangle {
         folder = folderPath;
         listView.model = Backend.listdir(folderPath, mergeChannels, hideSingle);  // qmllint disable unqualified
         textField.text = folderPath;
+        Backend.saveLastFolder(folderPath);  // qmllint disable unqualified
     }
 
     function openParentFolder() {
@@ -28,6 +29,12 @@ Rectangle {
     }
 
     Component.onCompleted: {
+        var lastFolder = Backend.getLastFolder();  // qmllint disable unqualified
+        if (lastFolder && lastFolder.length > 0) {
+            openFolder(lastFolder);
+            return;
+        }
+
         var homePath = StandardPaths.writableLocation(StandardPaths.HomeLocation).toString()
         // Windows: file:///C:/Users/xxx -> C:/Users/xxx
         // Linux/Mac: file:///home/xxx -> /home/xxx
@@ -132,12 +139,27 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: {
-                        if (delegate.isDir) {
-                            root.openFolder(delegate.url);
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton
+                    onClicked: function(mouse) {
+                        if (mouse.button === Qt.RightButton) {
+                            contextMenu.popup();
                         } else {
-                            root.fileChanged(delegate.url);
-                            listView.currentIndex = delegate.index;
+                            if (delegate.isDir) {
+                                root.openFolder(delegate.url);
+                            } else {
+                                root.fileChanged(delegate.url);
+                                listView.currentIndex = delegate.index;
+                            }
+                        }
+                    }
+
+                    Menu {
+                        id: contextMenu
+                        MenuItem {
+                            text: qsTr("Copy Path")
+                            onTriggered: {
+                                Backend.copyToClipboard(delegate.url);  // qmllint disable unqualified
+                            }
                         }
                     }
                 }

@@ -1,4 +1,5 @@
-from PySide6.QtCore import QObject, Slot
+from PySide6.QtCore import QObject, Slot, QSettings
+from PySide6.QtGui import QGuiApplication, QClipboard
 from PySide6.QtQml import QmlElement, QmlSingleton
 import os
 
@@ -8,12 +9,28 @@ import utils
 QML_IMPORT_NAME = "main.backend"
 QML_IMPORT_MAJOR_VERSION = 1
 
+SETTINGS_KEY_LAST_FOLDER = "lastFolder"
+
 
 @QmlElement
 @QmlSingleton
 class Backend(QObject):
     def __init__(self):
         super().__init__()
+        self._settings = QSettings("MrdExplorer", "MrdExplorer")
+
+    @Slot(str)
+    def saveLastFolder(self, folder: str):
+        self._settings.setValue(SETTINGS_KEY_LAST_FOLDER, folder)
+
+    @Slot(result=str)
+    def getLastFolder(self) -> str:
+        return self._settings.value(SETTINGS_KEY_LAST_FOLDER, "")
+
+    @Slot(str)
+    def copyToClipboard(self, text: str):
+        clipboard = QGuiApplication.clipboard()
+        clipboard.setText(text)
 
     @Slot(str, bool, bool, result=list)
     def listdir(self, d, merge_channels, hide_single):

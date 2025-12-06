@@ -1,7 +1,7 @@
 pragma ComponentBehavior: Bound
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import Qt.labs.platform
 import QtCore
@@ -51,7 +51,7 @@ Rectangle {
         spacing: 10
         anchors.topMargin: 10
 
-        CheckBox {
+        Controls.CheckBox {
             id: hideSingleCheckBox
 
             checked: true
@@ -66,7 +66,7 @@ Rectangle {
             height: 50
             Layout.leftMargin: 5
 
-            Button {
+            Controls.Button {
                 text: qsTr("<")
 
                 onClicked: {
@@ -74,7 +74,7 @@ Rectangle {
                 }
             }
 
-            TextField {
+            Controls.TextField {
                 id: textField
 
                 onAccepted: {}
@@ -82,7 +82,7 @@ Rectangle {
                 Layout.fillWidth: true
             }
 
-            Button {
+            Controls.Button {
                 text: qsTr("Change Folder")
                 Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
 
@@ -108,10 +108,10 @@ Rectangle {
             Layout.fillHeight: true
             Layout.fillWidth: true
             clip: true
-            ScrollBar.vertical: ScrollBar {
+            Controls.ScrollBar.vertical: Controls.ScrollBar {
                 id: vbar
                 active: listView.moving || pressed
-                policy: ScrollBar.AsNeeded
+                policy: Controls.ScrollBar.AsNeeded
             }
 
             delegate: Rectangle {
@@ -153,9 +153,9 @@ Rectangle {
                         }
                     }
 
-                    Menu {
+                    Controls.Menu {
                         id: contextMenu
-                        MenuItem {
+                        Controls.MenuItem {
                             text: qsTr("Copy Path")
                             onTriggered: {
                                 Backend.copyToClipboard(delegate.url);  // qmllint disable unqualified

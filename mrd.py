@@ -6,10 +6,13 @@
 # 一次性只有一个path， 为了节省内存，当path改变时，会重新加载图片
 
 import os
+import logging
 from PySide6.QtQuick import QQuickImageProvider
 
-from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale
+from utils import loadImagesFromMrdFile, numpy_to_qimage_grayscale, parseMrdFileName
 from sys import platform
+
+logger = logging.getLogger(__name__)
 
 
 class MrdImageProvider(QQuickImageProvider):
@@ -31,18 +34,16 @@ class MrdImageProvider(QQuickImageProvider):
         elif os.path.exists(path + ".MRD"):
             path += ".MRD"
         else:
-            raise ValueError
+            raise FileNotFoundError(f"MRD文件不存在: {path}")
         self.loadImages(path)
 
-        if not os.path.isdir(path):
-            channel_num = path.split(".")[-2][-1]
+        _, channel_num = parseMrdFileName(path)
+        if channel_num is None:
+            channel_num = "0"  # 默认通道
         image = self.images[channel_num][image_num]
         image = numpy_to_qimage_grayscale(image)
 
         return image
-
-    def updateImage(self, image):
-        self.image = image
 
     def loadImages(self, path):
         """
@@ -59,7 +60,7 @@ class MrdImageProvider(QQuickImageProvider):
             return
         self.path = path
 
-        print(f"loading: {path}")
+        logger.debug(f"加载图像: {path}")
         self.images.clear()
 
         dirname = os.path.dirname(path)
@@ -67,9 +68,13 @@ class MrdImageProvider(QQuickImageProvider):
         for f in os.listdir(dirname):
             if not f.startswith(prefix):
                 continue
+            if not (f.lower().endswith(".mrd")):
+                continue
 
             images = loadImagesFromMrdFile(os.path.join(dirname, f))
-            channel_num = f.split(".")[-2][-1]
+            _, channel_num = parseMrdFileName(f)
+            if channel_num is None:
+                channel_num = "0"  # 默认通道
             self.images[channel_num] = images
 
         # 图片自己归一化
@@ -80,13 +85,11 @@ class MrdImageProvider(QQuickImageProvider):
         # 一个线圈做归一化
         for key in self.images.keys():
             max_value = 0
-            # min_value = 1e6
             for i in range(len(self.images[key])):
                 max_value = max(max_value, self.images[key][i].max())
-                # min_value = min(min_value, self.images[key][i].min())
-            for i in range(len(self.images[key])):
-                # self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value)
-                self.images[key][i] = self.images[key][i] / max_value * 255
+            if max_value > 0:
+                for i in range(len(self.images[key])):
+                    self.images[key][i] = self.images[key][i] / max_value * 255
 
         # 全局归一化
         # max_value = 0
@@ -106,4 +109,4 @@ class MrdImageProvider(QQuickImageProvider):
         #         min_value = min(min_value, self.images[key][i].min())
         #     for key in self.images.keys():
         #         self.images[key][i] = (self.images[key][i]-min_value) * 255 / (max_value - min_value)
-        print("loaded")
+        logger.debug("图像加载完成")

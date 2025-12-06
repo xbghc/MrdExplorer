@@ -8,6 +8,11 @@ import numpy as np
 import logging
 import os
 
+# MRD文件格式常量
+MRD_HEADER_SIZE = 512       # 文件头大小（字节）
+MRD_SAMPLE_INFO_SIZE = 120  # 样本信息区大小（字节）
+MRD_COMPLEX_FLAG = 0x10     # 复数数据标志位
+
 def getMrdImagesNum(path):
     with open(path, 'rb') as f:
         mrd = f.read()
@@ -18,7 +23,7 @@ def getMrdImagesNum(path):
 def parseMrd(mrd):
     if not isinstance(mrd, bytes):
         return None
-    if len(mrd) < 512:
+    if len(mrd) < MRD_HEADER_SIZE:
         return None
 
     samples = int(0).from_bytes(mrd[0:4], byteorder="little", signed=True)
@@ -57,7 +62,7 @@ def parseMrd(mrd):
     else:
         logging.error("Unknown data type in the MRD file!")
         return None
-    if datatype & 0x10:
+    if datatype & MRD_COMPLEX_FLAG:
         eleSize *= 2
 
     #
@@ -70,7 +75,7 @@ def parseMrd(mrd):
         logging.error("Corrupted MRD file!")
         return None
     posPPR += 1
-    dataSize = posPPR - 512 - 120
+    dataSize = posPPR - MRD_HEADER_SIZE - MRD_SAMPLE_INFO_SIZE
     if dataSize < nele * eleSize:
         logging.error("Corrupted MRD file!")
         return None
@@ -78,13 +83,13 @@ def parseMrd(mrd):
     ndata = dataSize // (nele * eleSize)
     data = []
 
-    offset = 512
+    offset = MRD_HEADER_SIZE
     for i in range(ndata):
         x = np.frombuffer(
             mrd[offset:],
             dtype=(
                 [("re", "<" + dt), ("im", "<" + dt)]
-                if (datatype & 0x10)
+                if (datatype & MRD_COMPLEX_FLAG)
                 else ("<" + dt)
             ),
             count=nele,
@@ -93,12 +98,12 @@ def parseMrd(mrd):
             pass
         else:
             x = x.astype(np.float32)
-            if datatype & 0x10:
+            if datatype & MRD_COMPLEX_FLAG:
                 x = x.astype([("re", "<f4"), ("im", "<f4")])
             else:
                 x = x.astype(np.float32)
 
-        if datatype & 0x10:
+        if datatype & MRD_COMPLEX_FLAG:
             if dt in ("f8",):
                 x = x.view(np.complex128)
             else:
@@ -110,7 +115,7 @@ def parseMrd(mrd):
 
         data.append(x)
 
-    if offset != posPPR - 120:
+    if offset != posPPR - MRD_SAMPLE_INFO_SIZE:
         logging.warning("Corrupted MRD file!")
 
     # output = {}
@@ -124,7 +129,7 @@ def parseMrd(mrd):
 
 
 def loadImagesFromMrdFile(fpath):
-    if not fpath.endswith(".mrd"):
+    if not fpath.lower().endswith(".mrd"):
         return None
 
     with open(fpath, "rb") as f:
@@ -179,7 +184,7 @@ def numpy_to_qimage_grayscale(array):
 
 def parseMrdFileName(filename: str):
     filename = os.path.basename(filename)
-    if not (filename.endswith(".mrd") or filename.endswith(".MRD")):
+    if not filename.lower().endswith(".mrd"):
         raise ValueError
 
     filename = os.path.splitext(filename)[0]

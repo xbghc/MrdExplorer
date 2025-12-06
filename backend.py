@@ -10,6 +10,7 @@ QML_IMPORT_NAME = "main.backend"
 QML_IMPORT_MAJOR_VERSION = 1
 
 SETTINGS_KEY_LAST_FOLDER = "lastFolder"
+SETTINGS_KEY_LAST_FILE = "lastFile"
 
 
 @QmlElement
@@ -26,6 +27,14 @@ class Backend(QObject):
     @Slot(result=str)
     def getLastFolder(self) -> str:
         return self._settings.value(SETTINGS_KEY_LAST_FOLDER, "")
+
+    @Slot(str)
+    def saveLastFile(self, file_url: str):
+        self._settings.setValue(SETTINGS_KEY_LAST_FILE, file_url)
+
+    @Slot(result=str)
+    def getLastFile(self) -> str:
+        return self._settings.value(SETTINGS_KEY_LAST_FILE, "")
 
     @Slot(str)
     def copyToClipboard(self, text: str):

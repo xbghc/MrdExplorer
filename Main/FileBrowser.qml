@@ -28,10 +28,33 @@ Rectangle {
         openFolder(newPath);
     }
 
+    function selectFile(fileUrl, index) {
+        fileChanged(fileUrl);
+        listView.currentIndex = index;
+        Backend.saveLastFile(fileUrl);  // qmllint disable unqualified
+    }
+
+    function restoreLastFile() {
+        var lastFile = Backend.getLastFile();  // qmllint disable unqualified
+        if (!lastFile || lastFile.length === 0) {
+            return;
+        }
+
+        // 在当前列表中查找并选中上次的文件
+        for (var i = 0; i < listView.count; i++) {
+            var item = listView.model[i];
+            if (item.url === lastFile) {
+                selectFile(lastFile, i);
+                return;
+            }
+        }
+    }
+
     Component.onCompleted: {
         var lastFolder = Backend.getLastFolder();  // qmllint disable unqualified
         if (lastFolder && lastFolder.length > 0) {
             openFolder(lastFolder);
+            restoreLastFile();
             return;
         }
 
@@ -147,8 +170,7 @@ Rectangle {
                             if (delegate.isDir) {
                                 root.openFolder(delegate.url);
                             } else {
-                                root.fileChanged(delegate.url);
-                                listView.currentIndex = delegate.index;
+                                root.selectFile(delegate.url, delegate.index);
                             }
                         }
                     }

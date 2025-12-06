@@ -6,8 +6,18 @@
 
 ## 依赖
 
-- PySide6(Qt6.8)
-- Python3.12
+- Python >= 3.12
+- PySide6 >= 6.8
+
+## 安装与运行
+
+```bash
+# 安装依赖
+uv sync
+
+# 运行
+uv run python main.py
+```
 
 ## TODO
 

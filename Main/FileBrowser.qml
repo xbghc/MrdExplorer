@@ -92,15 +92,28 @@ Rectangle {
             onCheckedChanged: root.refreshFolder()
         }
 
-        Controls.CheckBox {
-            id: showHiddenCheckBox
-
-            checked: false
-            text: qsTr("Show Hidden Files")
-
+        RowLayout {
             Layout.leftMargin: 5
+            spacing: 10
 
-            onCheckedChanged: root.refreshFolder()
+            Controls.CheckBox {
+                id: showHiddenCheckBox
+
+                checked: false
+                text: qsTr("Show Hidden Files")
+
+                onCheckedChanged: root.refreshFolder()
+            }
+
+            Controls.Button {
+                text: qsTr("Clear Hidden")
+                visible: showHiddenCheckBox.checked
+
+                onClicked: {
+                    Backend.clearHiddenFiles(root.folder);  // qmllint disable unqualified
+                    root.refreshFolder();
+                }
+            }
         }
 
         RowLayout {

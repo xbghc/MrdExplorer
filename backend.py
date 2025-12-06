@@ -11,6 +11,7 @@ QML_IMPORT_MAJOR_VERSION = 1
 
 SETTINGS_KEY_LAST_FOLDER = "lastFolder"
 SETTINGS_KEY_LAST_FILE = "lastFile"
+SETTINGS_KEY_HIDDEN_FILES = "hiddenFiles"
 
 
 @QmlElement
@@ -41,18 +42,72 @@ class Backend(QObject):
         clipboard = QGuiApplication.clipboard()
         clipboard.setText(text)
 
-    @Slot(str, bool, bool, result=list)
-    def listdir(self, d, merge_channels, hide_single):
+    def _getHiddenFilesKey(self, directory: str) -> str:
+        """生成目录对应的隐藏文件设置键"""
+        return f"{SETTINGS_KEY_HIDDEN_FILES}/{directory}"
+
+    @Slot(str, str)
+    def hideFile(self, directory: str, filename: str):
+        """隐藏指定文件"""
+        key = self._getHiddenFilesKey(directory)
+        hidden_list = self._settings.value(key, [])
+        if not isinstance(hidden_list, list):
+            hidden_list = []
+        if filename not in hidden_list:
+            hidden_list.append(filename)
+            self._settings.setValue(key, hidden_list)
+
+    @Slot(str, str)
+    def unhideFile(self, directory: str, filename: str):
+        """取消隐藏指定文件"""
+        key = self._getHiddenFilesKey(directory)
+        hidden_list = self._settings.value(key, [])
+        if not isinstance(hidden_list, list):
+            hidden_list = []
+        if filename in hidden_list:
+            hidden_list.remove(filename)
+            self._settings.setValue(key, hidden_list)
+
+    @Slot(str, result=list)
+    def getHiddenFiles(self, directory: str) -> list:
+        """获取目录下的隐藏文件列表"""
+        key = self._getHiddenFilesKey(directory)
+        hidden_list = self._settings.value(key, [])
+        if not isinstance(hidden_list, list):
+            return []
+        return hidden_list
+
+    @Slot(str, str, result=bool)
+    def isFileHidden(self, directory: str, filename: str) -> bool:
+        """检查文件是否被隐藏"""
+        hidden_list = self.getHiddenFiles(directory)
+        return filename in hidden_list
+
+    @Slot(str, bool, bool, bool, result=list)
+    def listdir(self, d, merge_channels, hide_single, show_hidden):
         if not os.path.isdir(d):
             raise NotADirectoryError(f"路径不是目录: {d}")
 
         file_list = os.listdir(d)
+        hidden_files = self.getHiddenFiles(d)
         out = []
+
+        # 先收集所有文件信息，用于计算线圈数量
+        coil_counts = {}  # {base_filename: count}
+        for f in file_list:
+            if f.lower().endswith(".mrd"):
+                base_filename, c = utils.parseMrdFileName(f)
+                if c is not None:
+                    coil_counts[base_filename] = coil_counts.get(base_filename, 0) + 1
 
         for f in file_list:
             u = d + "/" + f  # 不要用os.path.join，QML无法识别
             if os.path.isdir(u):
-                out.append({"url": u, "isDir": True, "filename": f})
+                is_hidden = f in hidden_files
+                if is_hidden and not show_hidden:
+                    continue
+                out.append({"url": u, "isDir": True, "filename": f,
+                            "coilCount": 0, "isHidden": is_hidden})
             else:
                 if not f.lower().endswith(".mrd"):
                     continue
@@ -62,18 +117,29 @@ class Backend(QObject):
 
                 if merge_channels:
                     url = d + "/" + filename
+                    is_hidden = filename in hidden_files
+
+                    if is_hidden and not show_hidden:
+                        continue
 
                     exists = False
                     for o in out:
                         if o["url"] == url:
                             exists = True
+                            break
 
                     if not exists:
+                        coil_count = coil_counts.get(filename, 1)
                         out.append({"url": url, "isDir": False,
-                                    "filename": filename})
+                                    "filename": filename, "coilCount": coil_count,
+                                    "isHidden": is_hidden})
 
                 else:
-                    out.append({"url": u, "isDir": False, "filename": f})
+                    is_hidden = f in hidden_files
+                    if is_hidden and not show_hidden:
+                        continue
+                    out.append({"url": u, "isDir": False, "filename": f,
+                                "coilCount": 1, "isHidden": is_hidden})
 
         return out
 

@@ -28,7 +28,15 @@ Rectangle {
     }
 
     Component.onCompleted: {
-        openFolder(StandardPaths.writableLocation(StandardPaths.HomeLocation).toString().replace("file://", ""))
+        var homePath = StandardPaths.writableLocation(StandardPaths.HomeLocation).toString()
+        // Windows: file:///C:/Users/xxx -> C:/Users/xxx
+        // Linux/Mac: file:///home/xxx -> /home/xxx
+        if (homePath.startsWith("file:///") && homePath.charAt(9) === ':') {
+            homePath = homePath.replace("file:///", "")
+        } else {
+            homePath = homePath.replace("file://", "")
+        }
+        openFolder(homePath)
     }
 
     ColumnLayout {

@@ -106,11 +106,10 @@ Rectangle {
             }
 
             Controls.Button {
-                text: qsTr("Clear Hidden")
-                visible: showHiddenCheckBox.checked
+                text: qsTr("Clear All Data")
 
                 onClicked: {
-                    Backend.clearHiddenFiles(root.folder);  // qmllint disable unqualified
+                    Backend.clearAllSettings();  // qmllint disable unqualified
                     root.refreshFolder();
                 }
             }

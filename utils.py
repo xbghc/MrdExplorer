@@ -16,7 +16,10 @@ MRD_COMPLEX_FLAG = 0x10     # 复数数据标志位
 def getMrdImagesNum(path):
     with open(path, 'rb') as f:
         mrd = f.read()
-    shape = parseMrd(mrd).shape
+    data = parseMrd(mrd)
+    if data is None:
+        raise ValueError(f"Failed to parse MRD file: {path}")
+    shape = data.shape
     return shape[2] * shape[4]  # slices和views2有且仅有一个为1
 
 
@@ -118,6 +121,10 @@ def parseMrd(mrd):
     if offset != posPPR - MRD_SAMPLE_INFO_SIZE:
         logging.warning("Corrupted MRD file!")
 
+    if not data:
+        logging.error("No valid data found in MRD file!")
+        return None
+
     # output = {}
     # output['description'] = mrd[256:512].decode('cp437', errors='ignore').rstrip('\0')
     # output['data'] = data
@@ -135,6 +142,9 @@ def loadImagesFromMrdFile(fpath):
     with open(fpath, "rb") as f:
         mrd = f.read()
         kdata = parseMrd(mrd)
+
+    if kdata is None:
+        return None
 
     experiments, echoes, slices, views, views2, samples = kdata.shape
     assert experiments == 1 and echoes == 1

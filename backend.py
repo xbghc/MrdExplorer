@@ -83,6 +83,24 @@ class Backend(QObject):
         hidden_list = self.getHiddenFiles(directory)
         return filename in hidden_list
 
+    @Slot(str)
+    def clearHiddenFiles(self, directory: str):
+        """清除指定目录的隐藏文件设置"""
+        key = self._getHiddenFilesKey(directory)
+        self._settings.remove(key)
+
+    @Slot()
+    def clearAllHiddenFiles(self):
+        """清除所有目录的隐藏文件设置"""
+        self._settings.beginGroup(SETTINGS_KEY_HIDDEN_FILES)
+        self._settings.remove("")
+        self._settings.endGroup()
+
+    @Slot()
+    def clearAllSettings(self):
+        """清除所有设置（包括隐藏文件、上次文件夹等）"""
+        self._settings.clear()
+
     @Slot(str, bool, bool, bool, result=list)
     def listdir(self, d, merge_channels, hide_single, show_hidden):
         if not os.path.isdir(d):

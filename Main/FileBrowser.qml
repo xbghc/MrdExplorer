@@ -191,6 +191,7 @@ Rectangle {
                         text: delegate.coilCount > 0 ? "[" + delegate.coilCount + "]" : ""
                         color: "gray"
                         visible: !delegate.isDir && delegate.coilCount > 0
+                        Layout.rightMargin: 5
                     }
                 }
 

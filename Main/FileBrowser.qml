@@ -14,13 +14,36 @@ Rectangle {
 
     property bool mergeChannels: true
     property alias hideSingle: hideSingleCheckBox.checked
+    property alias showHidden: showHiddenCheckBox.checked
     property string folder: ""
 
     function openFolder(folderPath) {
         folder = folderPath;
-        listView.model = Backend.listdir(folderPath, mergeChannels, hideSingle);  // qmllint disable unqualified
+        listView.model = Backend.listdir(folderPath, mergeChannels, hideSingle, showHidden);  // qmllint disable unqualified
         textField.text = folderPath;
         Backend.saveLastFolder(folderPath);  // qmllint disable unqualified
+    }
+
+    function refreshFolder() {
+        if (folder && folder.length > 0) {
+            listView.model = Backend.listdir(folder, mergeChannels, hideSingle, showHidden);  // qmllint disable unqualified
+        }
+    }
+
+    function refreshAndSelectAt(index) {
+        refreshFolder();
+        // 选择指定位置的文件，如果超出范围则选择最后一个
+        if (listView.count === 0) return;
+        var newIndex = Math.min(index, listView.count - 1);
+        var item = listView.model[newIndex];
+        // 跳过目录，找到下一个文件
+        while (item && item.isDir && newIndex < listView.count - 1) {
+            newIndex++;
+            item = listView.model[newIndex];
+        }
+        if (item && !item.isDir) {
+            selectFile(item.url, newIndex);
+        }
     }
 
     function openParentFolder() {
@@ -81,6 +104,31 @@ Rectangle {
             text: qsTr("Hide Single-Channel Scan")
 
             Layout.leftMargin: 5
+
+            onCheckedChanged: root.refreshFolder()
+        }
+
+        RowLayout {
+            Layout.leftMargin: 5
+            spacing: 10
+
+            Controls.CheckBox {
+                id: showHiddenCheckBox
+
+                checked: false
+                text: qsTr("Show Hidden Files")
+
+                onCheckedChanged: root.refreshFolder()
+            }
+
+            Controls.Button {
+                text: qsTr("Clear All Data")
+
+                onClicked: {
+                    Backend.clearAllSettings();  // qmllint disable unqualified
+                    root.refreshFolder();
+                }
+            }
         }
 
         RowLayout {
@@ -144,20 +192,35 @@ Rectangle {
                 required property string filename
                 required property bool isDir
                 required property string url
+                required property int coilCount
+                required property bool isHidden
 
                 width: ListView.view.width
                 height: 50
                 color: ListView.isCurrentItem ? "lightblue" : "lightgray"
+                opacity: delegate.isHidden ? 0.5 : 1.0
 
-                Text {
-                    text: delegate.filename
-
+                RowLayout {
                     anchors {
                         left: parent.left
                         leftMargin: 10
+                        right: parent.right
+                        rightMargin: 10
                         verticalCenter: parent.verticalCenter
                     }
-                    color: delegate.isDir ? "brown" : "black"
+
+                    Text {
+                        text: delegate.filename
+                        color: delegate.isDir ? "brown" : "black"
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        text: delegate.coilCount > 0 ? "[" + delegate.coilCount + "]" : ""
+                        color: "gray"
+                        visible: !delegate.isDir && delegate.coilCount > 0
+                        Layout.rightMargin: 5
+                    }
                 }
 
                 MouseArea {
@@ -181,6 +244,19 @@ Rectangle {
                             text: qsTr("Copy Path")
                             onTriggered: {
                                 Backend.copyToClipboard(delegate.url);  // qmllint disable unqualified
+                            }
+                        }
+                        Controls.MenuItem {
+                            text: delegate.isHidden ? qsTr("Unhide") : qsTr("Hide")
+                            onTriggered: {
+                                var currentIndex = delegate.index;
+                                if (delegate.isHidden) {
+                                    Backend.unhideFile(root.folder, delegate.filename);  // qmllint disable unqualified
+                                    root.refreshFolder();
+                                } else {
+                                    Backend.hideFile(root.folder, delegate.filename);  // qmllint disable unqualified
+                                    root.refreshAndSelectAt(currentIndex);
+                                }
                             }
                         }
                     }

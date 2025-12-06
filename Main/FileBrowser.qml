@@ -30,6 +30,22 @@ Rectangle {
         }
     }
 
+    function refreshAndSelectAt(index) {
+        refreshFolder();
+        // 选择指定位置的文件，如果超出范围则选择最后一个
+        if (listView.count === 0) return;
+        var newIndex = Math.min(index, listView.count - 1);
+        var item = listView.model[newIndex];
+        // 跳过目录，找到下一个文件
+        while (item && item.isDir && newIndex < listView.count - 1) {
+            newIndex++;
+            item = listView.model[newIndex];
+        }
+        if (item && !item.isDir) {
+            selectFile(item.url, newIndex);
+        }
+    }
+
     function openParentFolder() {
         var newPath = folder.substring(0, folder.lastIndexOf('/'));
         openFolder(newPath);
@@ -233,12 +249,14 @@ Rectangle {
                         Controls.MenuItem {
                             text: delegate.isHidden ? qsTr("Unhide") : qsTr("Hide")
                             onTriggered: {
+                                var currentIndex = delegate.index;
                                 if (delegate.isHidden) {
                                     Backend.unhideFile(root.folder, delegate.filename);  // qmllint disable unqualified
+                                    root.refreshFolder();
                                 } else {
                                     Backend.hideFile(root.folder, delegate.filename);  // qmllint disable unqualified
+                                    root.refreshAndSelectAt(currentIndex);
                                 }
-                                root.refreshFolder();
                             }
                         }
                     }
